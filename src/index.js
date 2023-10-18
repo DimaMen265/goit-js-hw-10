@@ -48,16 +48,14 @@ const select = new SlimSelect({
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    requestStart();
     fetchBreeds()
-        .then(breeds => {
-            requestStart();
-            renderBreeds(breeds);
-        })
+        .then(breeds => renderBreeds(breeds))
         .catch(error => handleFetchError(error));
 });
 
-const renderBreeds = breeds => {
-    const arrSelected = [{ text: "", placeholder: true }, ...breeds.map(breed => ({ text: breed.name, value: breed.id }))];
+const renderBreeds = cats => {
+    const arrSelected = [{ text: "", placeholder: true }, ...cats.map(cat => ({ text: cat.name, value: cat.id }))];
     select.setData(arrSelected);
     requestFinish();
 };
