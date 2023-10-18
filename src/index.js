@@ -12,34 +12,49 @@ errorText.classList.add("visually-hidden");
 
 const catInfo = document.querySelector(".cat-info");
 
-const handleFetchError = error => {
-    error = Notify.failure(`${errorText.textContent}`);
-    requestWrong();
-};
+const select = new SlimSelect({
+    select: breedSelect,
+    settings: {
+        disabled: false,
+        alwaysOpen: false,
+        showSearch: true,
+        searchPlaceholder: "Search",
+        searchText: "No Results",
+        searchingText: "Searching...",
+        searchHighlight: false,
+        closeOnSelect: true,
+        contentLocation: document.body,
+        contentPosition: "absolute",
+        openPosition: "auto",
+        placeholderText: "Select cat",
+        allowDeselect: false,
+        hideSelected: false,
+        showOptionTooltips: false,
+    },
+    events: {
+        afterChange: newVal => {
+            const breedId = newVal[0].value;
+            if (breedId.length > 0) {
+                requestStart();
+                removeChildren(catInfo);
+                fetchCatByBreed(breedId)
+                    .then(cats => renderCats(cats))
+                    .catch(error => handleFetchError(error));
+            } else {
+                catInfo.classList.add("visually-hidden");
+            }
+        },
+    },
+});
 
-const removeChildren = container => {
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
-    };
-};
-
-const requestStart = () => {
-    loader.classList.remove("visually-hidden");
-    breedSelect.classList.add("visually-hidden");
-    catInfo.classList.add("visually-hidden");
-};
-
-const requestFinish = () => {
-    loader.classList.add("visually-hidden");
-    breedSelect.classList.remove("visually-hidden");
-    catInfo.classList.remove("visually-hidden");
-};
-
-const requestWrong = () => {
-    loader.classList.add("visually-hidden");
-    breedSelect.classList.add("visually-hidden");
-    catInfo.classList.add("visually-hidden");
-};
+document.addEventListener("DOMContentLoaded", () => {
+    fetchBreeds()
+        .then(breeds => {
+            requestStart();
+            renderBreeds(breeds);
+        })
+        .catch(error => handleFetchError(error));
+});
 
 const renderBreeds = breeds => {
     const arrSelected = [{ text: "", placeholder: true }, ...breeds.map(breed => ({ text: breed.name, value: breed.id }))];
@@ -64,46 +79,35 @@ const renderCats = cats => {
     } else {
         Notify.failure(`${errorText.textContent}`);
     }
+
     requestFinish();
 };
 
-fetchBreeds()
-    .then(breeds => renderBreeds(breeds))
-    .catch(error => handleFetchError(error));
-
-const handleBreedChange = newVal => {
-    const breedId = newVal[0].value;
-    if (breedId) {
-        requestStart();
-        removeChildren(catInfo);
-        fetchCatByBreed(breedId)
-            .then(cats => renderCats(cats))
-            .catch(error => handleFetchError(error));
-    } else {
-        catInfo.classList.add("visually-hidden");
-    };
+const handleFetchError = error => {
+    error = Notify.failure(`${errorText.textContent}`);
+    requestWrong();
 };
 
-const select = new SlimSelect({
-    select: breedSelect,
-    settings: {
-        disabled: false,
-        alwaysOpen: false,
-        showSearch: true,
-        searchPlaceholder: 'Search',
-        searchText: 'No Results',
-        searchingText: 'Searching...',
-        searchHighlight: false,
-        closeOnSelect: true,
-        contentLocation: document.body,
-        contentPosition: 'absolute',
-        openPosition: 'auto',
-        placeholderText: 'Select cat',
-        allowDeselect: false,
-        hideSelected: false,
-        showOptionTooltips: false,
-    },
-    events: {
-        afterChange: newVal => handleBreedChange(newVal),
-    },
-});
+const removeChildren = container => {
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+};
+
+const requestStart = () => {
+    loader.classList.remove("visually-hidden");
+    breedSelect.classList.add("visually-hidden");
+    catInfo.classList.add("visually-hidden");
+};
+
+const requestFinish = () => {
+    loader.classList.add("visually-hidden");
+    breedSelect.classList.remove("visually-hidden");
+    catInfo.classList.remove("visually-hidden");
+};
+
+const requestWrong = () => {
+    loader.classList.add("visually-hidden");
+    breedSelect.classList.add("visually-hidden");
+    catInfo.classList.add("visually-hidden");
+};
